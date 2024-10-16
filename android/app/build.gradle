@@ -5,6 +5,19 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+def dartDefines = [
+        "APP_NAME"     : "Recago",
+        "APP_ID_SUFFIX": ""
+]
+if (project.hasProperty('dart-defines')) {
+    def defineItems = project.property('dart-defines').toString().split(',')
+    for (defineItem in defineItems) {
+        def items = new String(defineItem.decodeBase64(), 'UTF-8').split('=')
+
+        dartDefines[items.first()] = items.last()
+    }
+}
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
@@ -34,14 +47,13 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.vanvixi.dart_defines_config"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
+        applicationId = "com.vanvixi.dart_defines"
+        applicationIdSuffix = dartDefines.APP_ID_SUFFIX
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
+        resValue "string", "app_name", dartDefines.APP_NAME
     }
 
     buildTypes {
@@ -50,6 +62,14 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.debug
         }
+    }
+
+    flavorDimensions "flavor"
+    productFlavors {
+        local { dimension "flavor" }
+        dev { dimension "flavor" }
+        stg { dimension "flavor" }
+        prod { dimension "flavor" }
     }
 }
 
